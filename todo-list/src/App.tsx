@@ -1,18 +1,36 @@
 import React, { useState } from 'react';
-import logo from './logo.svg';
 import './App.css';
-import TodoPopUp from './components/UpdateCreateTodo/TodoPopUp';
+import TodoModal from './components/UpdateCreateTodo/TodoModal';
 import TaskTable from './components/TaskTable';
+
 function App() {
   const [showCreateTask, setShowCreateTask] = useState(false);
+
+  const handleOpenModal = () => setShowCreateTask(true);
+  const handleCloseModal = () => setShowCreateTask(false);
+
   return (
     <div className="App">
-      <div className="h-screen flex flex-col items-center gap-6  text-white">
-        <button onClick={()=> setShowCreateTask(true)} className="bg-violet-500 px-4 py-2 rounded-lg text-lg"> Create new Task</button>
-        {showCreateTask && <TodoPopUp onClose={() => setShowCreateTask(false)}/>}
-        <TaskTable/>
-      </div>
-      
+      {/* Botón para abrir el modal en modo creación */}
+      <button
+        onClick={handleOpenModal}
+        className="bg-blue-500 text-white px-4 py-2 rounded"
+      >
+        Create New Task
+      </button>
+
+      {/* Modal para crear una tarea */}
+      <TodoModal
+        open={showCreateTask}
+        onClose={handleCloseModal}
+        onSuccess={() => {
+          console.log('Task created successfully!');
+          handleCloseModal(); // Cierra el modal después de éxito
+        }}
+      />
+
+      {/* Tabla de tareas */}
+      <TaskTable />
     </div>
   );
 }

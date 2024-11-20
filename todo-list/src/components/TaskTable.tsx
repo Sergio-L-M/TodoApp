@@ -1,22 +1,25 @@
 import React, { useEffect, useState } from 'react';
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Typography, Checkbox } from '@mui/material';
 import axios from 'axios';
+import TodoModal from './UpdateCreateTodo/TodoModal';
 
 interface Task {
   id: string;
   text: string;
+  priority: string;
   dueDate: string | null;
   done: boolean;
-  priority: string;
 }
 
 const TaskTable: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [openModal, setOpenModal] = useState(false);
+  const [selectedTask, setSelectedTask] = useState<Task | undefined>();
 
   useEffect(() => {
     const fetchTasks = async () => {
       try {
         const response = await axios.get('http://localhost:8080/todos');
-        console.log(response)
         setTasks(response.data);
       } catch (error) {
         console.error('Error fetching tasks:', error);
@@ -26,50 +29,102 @@ const TaskTable: React.FC = () => {
     fetchTasks();
   }, []);
 
-  const HandleDelete = async (id: string) => {
-    try{
+  const handleDelete = async (id: string) => {
+    try {
       await axios.delete(`http://localhost:8080/todos/${id}`);
       alert('Task deleted successfully');
-    }catch(error){
+      setTasks(tasks.filter((task) => task.id !== id));
+    } catch (error) {
+      console.error('Failed to delete task:', error);
       alert('Failed to delete task. Please try again.');
     }
-  }
+  };
+
+  const handleToggleDone = async (task: Task) => {
+    const updatedTask = { ...task, done: !task.done };
+    try {
+      await axios.put(`http://localhost:8080/todos/${task.id}`, updatedTask, {
+        headers: { 'Content-Type': 'application/json' },
+      });
+      setTasks(tasks.map((t) => (t.id === task.id ? updatedTask : t)));
+    } catch (error) {
+      console.error('Failed to update task:', error);
+      alert('Failed to update task. Please try again.');
+    }
+  };
+  const handleEdit = (task: Task) => {
+    setSelectedTask(task); // Prepara la tarea para edición
+    setOpenModal(true); // Abre el modal
+  };
+
+  const refreshTasks = async () => {
+    try {
+      const response = await axios.get('http://localhost:8080/todos');
+      setTasks(response.data);
+    } catch (error) {
+      console.error('Error refreshing tasks:', error);
+    }
+  };
+
   return (
     <div>
-      <h2>Task List</h2>
-      <table  className=" table-auto w-full  text-black">
-        <thead>
-          <tr>
-            <th>
-              <input type="checkbox" />
-            </th>
-            <th>Name</th>
-            <th>Priority</th>
-            <th>Due Date</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {tasks.map((task) => (
-            <tr key={task.id}>
-              <td>
-                <input type="checkbox" checked={task.done} readOnly />
-              </td>
-              <td>{task.text}</td>
-              <td>{task.priority}</td>
-              <td>{task.dueDate ? task.dueDate : '-'}</td>
-              <td>
-                <button>Edit</button>
-                <button  onClick={()=> HandleDelete(task.id)}>Delete</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <Typography variant="h4" gutterBottom>
+        Task List
+      </Typography>
+      <TableContainer component={Paper}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Done</TableCell>
+              <TableCell>Name</TableCell>
+              <TableCell>Priority</TableCell>
+              <TableCell>Due Date</TableCell>
+              <TableCell>Actions</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {tasks.map((task) => (
+              <TableRow key={task.id}>
+                <TableCell>                  <Checkbox
+                    checked={task.done}
+                    onChange={() => handleToggleDone(task)}
+                    color="primary"
+                  /></TableCell>
+                <TableCell>{task.text}</TableCell>
+                <TableCell>{task.priority}</TableCell>
+                <TableCell>{task.dueDate || '-'}</TableCell>
+                <TableCell>
+                  <Button
+                    variant="outlined"
+                    color="primary"
+                    size="small"
+                    onClick={() => handleEdit(task)}
+                    style={{ marginRight: '5px' }}
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    color="secondary"
+                    size="small"
+                    onClick={() => handleDelete(task.id)}
+                  >
+                    Delete
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+      <TodoModal
+        open={openModal}
+        onClose={() => setOpenModal(false)}
+        initialTask={selectedTask}
+        onSuccess={refreshTasks} // Refresca la tabla después de actualizar
+      />
     </div>
   );
 };
 
 export default TaskTable;
-
-
