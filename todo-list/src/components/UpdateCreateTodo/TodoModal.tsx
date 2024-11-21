@@ -11,10 +11,11 @@ interface Task {
 
 interface TodoModalProps {
   open: boolean;
-  onClose: () => void; // Función para cerrar el modal
-  initialTask?: Task; // Datos iniciales si es edición
-  onSuccess?: () => void; // Callback después de éxito
+  onClose: () => void;
+  initialTask?: Task | null; // Acepta undefined o null
+  onSuccess?: () => void;
 }
+
 
 const TodoModal: React.FC<TodoModalProps> = ({ open, onClose, initialTask, onSuccess }) => {
   const [text, setTaskText] = useState('');

@@ -3,6 +3,7 @@ package com.sergio.todolist.service;
 import com.sergio.todolist.model.Todo;
 import org.springframework.stereotype.Service;
 import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Optional;
 import java.util.Map;
@@ -63,9 +64,63 @@ public class TodoService {
         }
         return false;
     }
+    
     public List<Todo> findAll(){
         return todoDatabase.values().stream().collect(Collectors.toList());
     }
+    public List<Todo> filterAndSortTodos(
+        List<Todo> todos,
+        String sortBy,
+        Boolean ascending,
+        String startsWith,
+        List<String> priorities,  // Lista de prioridades
+        List<Boolean> doneStates  // Lista de estados
+) {
+    // Filtro: Palabras que empiezan con "startsWith"
+    if (startsWith != null) {
+        todos = todos.stream()
+                .filter(todo -> todo.getText().toLowerCase().startsWith(startsWith.toLowerCase()))
+                .collect(Collectors.toList());
+    }
+
+    // Filtro: Filtrar por lista de prioridades
+    if (priorities != null && !priorities.isEmpty()) {
+        todos = todos.stream()
+                .filter(todo -> priorities.contains(todo.getPriority().toString()))
+                .collect(Collectors.toList());
+    }
+
+    // Filtro: Filtrar por lista de estados "done"
+    if (doneStates != null && !doneStates.isEmpty()) {
+        todos = todos.stream()
+                .filter(todo -> doneStates.contains(todo.isDone()))
+                .collect(Collectors.toList());
+    }
+
+    // Ordenar: Por "dueDate" o "priority"
+    if (sortBy != null) {
+        Comparator<Todo> comparator;
+        switch (sortBy) {
+            case "dueDate":
+                comparator = Comparator.comparing(Todo::getDueDate, Comparator.nullsLast(Comparator.naturalOrder()));
+                break;
+            case "priority":
+                comparator = Comparator.comparing(Todo::getPriority);
+                break;
+            default:
+                throw new IllegalArgumentException("Sort by must be 'dueDate' or 'priority'");
+        }
+
+        if (Boolean.FALSE.equals(ascending)) {  // Si "ascending" es false, invierte el orden
+            comparator = comparator.reversed();
+        }
+
+        todos = todos.stream().sorted(comparator).collect(Collectors.toList());
+    }
+   
+    return todos;  // Devuelve la lista filtrada y ordenada
+}
+
 
 
 

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import './App.css';
 import TodoModal from './components/UpdateCreateTodo/TodoModal';
 import TaskTable from './components/TaskTable';
-
+import ParentComponent from './components/TodoFilter/TodoFilter';
 function App() {
   const [showCreateTask, setShowCreateTask] = useState(false);
 
@@ -28,8 +28,6 @@ function App() {
           handleCloseModal(); // Cierra el modal después de éxito
         }}
       />
-
-      {/* Tabla de tareas */}
       <TaskTable />
     </div>
   );
