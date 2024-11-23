@@ -43,21 +43,63 @@ public class TodoController {
     }
     
     @GetMapping
-    public ResponseEntity<List<Todo>> getTodos(
-            @RequestParam(required = false) String sortBy,              // Ordenar por "dueDate" o "priority"
-            @RequestParam(required = false) Boolean ascending,         // true para ascendente, false para descendente
-            @RequestParam(required = false) String startsWith,         // Palabras que empiecen con estas letras
-            @RequestParam(required = false) List<String> priority,     // Lista de prioridades ("HIGH", "MEDIUM", "LOW")
-            @RequestParam(required = false) List<Boolean> done         // Lista de estados (true, false)
+    public ResponseEntity<Map<String, Object>> getTodos(
+            @RequestParam(defaultValue = "0") int page,               // Número de página (por defecto 0)
+            @RequestParam(defaultValue = "10") int pageSize,          // Tamaño de página (por defecto 10)
+            @RequestParam(required = false) String sortBy,            // Ordenar por "dueDate" o "priority"
+            @RequestParam(required = false) Boolean ascending,        // true para ascendente, false para descendente
+            @RequestParam(required = false) String startsWith,        // Filtrar por palabras iniciales
+            @RequestParam(required = false) List<String> priority,    // Lista de prioridades
+            @RequestParam(required = false) List<Boolean> done        // Lista de estados
     ) {
-        List<Todo> todos = todoService.findAll();  // Obtiene todas las tareas
-
-        // Aplicar filtros y ordenamiento
-        todos = todoService.filterAndSortTodos(todos, sortBy, ascending, startsWith, priority, done);
-
-        return ResponseEntity.ok(todos);  // Devuelve la lista filtrada y ordenada
+        // Obtiene todas las tareas
+        List<Todo> allTodos = todoService.findAll();
+    
+        // Filtra y ordena las tareas
+        List<Todo> filteredAndSortedTodos = todoService.filterAndSortTodos(
+            allTodos,
+            sortBy,
+            ascending,
+            startsWith,
+            priority,
+            done
+        );
+    
+        // Calcula el número total de páginas
+        int totalItems = filteredAndSortedTodos.size();
+        int totalPages = (int) Math.ceil((double) totalItems / pageSize);
+    
+        // Aplica paginación solo a los datos filtrados y ordenados
+        List<Todo> paginatedTodos = todoService.getPage(filteredAndSortedTodos, page, pageSize);
+    
+        // Crea la respuesta con los datos de la página y el total de páginas
+        Map<String, Object> response = Map.of(
+                "currentPage", page,
+                "pageSize", pageSize,
+                "totalPages", totalPages,
+                "totalItems", totalItems,
+                "todos", paginatedTodos
+        );
+    
+        return ResponseEntity.ok(response);
     }
-
+    
+    @GetMapping("/metrics/pending")
+    public ResponseEntity<Map<String, String>> getPendingMetrics() {
+        double averageTime = todoService.calculateAverageTime();
+        Map<Todo.Priority, Double> averageTimeByPriority = todoService.calculateAverageTimeByPriority();
+    
+        Map<String, String> response = Map.of(
+                "averageTime", String.format("%.2f minutes", averageTime),
+                "averageTimeHigh", String.format("%.2f minutes", averageTimeByPriority.getOrDefault(Todo.Priority.HIGH, 0.0)),
+                "averageTimeMedium", String.format("%.2f minutes", averageTimeByPriority.getOrDefault(Todo.Priority.MEDIUM, 0.0)),
+                "averageTimeLow", String.format("%.2f minutes", averageTimeByPriority.getOrDefault(Todo.Priority.LOW, 0.0))
+        );
+    
+        return ResponseEntity.ok(response);
+    }
+    
+    
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteTodo(@PathVariable String id){
         boolean deleted = todoService.deleteById(id);
@@ -75,7 +117,7 @@ public class TodoController {
         return ResponseEntity.notFound().build();
     }
     @PutMapping("/{id}/done")
-    public ResponseEntity<Void> updateDoneStatus(@PathVariable String id, @RequestBody Map<String, Boolean> request) {
+    public ResponseEntity<Void> markAsDone(@PathVariable String id, @RequestBody Map<String, Boolean> request) {
         // Extraemos el valor de "done" del cuerpo de la solicitud
         Boolean done = request.get("done");
 

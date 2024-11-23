@@ -28,6 +28,9 @@ public class Todo {
     public enum Priority{
         HIGH, MEDIUM, LOW
     }
+    public Todo() {
+    }
+
 
     public Todo(String text, Priority priority, LocalDate dueDate){
         this.text =  text;

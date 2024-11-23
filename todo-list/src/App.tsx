@@ -11,23 +11,7 @@ function App() {
 
   return (
     <div className="App">
-      {/* Botón para abrir el modal en modo creación */}
-      <button
-        onClick={handleOpenModal}
-        className="bg-blue-500 text-white px-4 py-2 rounded"
-      >
-        Create New Task
-      </button>
 
-      {/* Modal para crear una tarea */}
-      <TodoModal
-        open={showCreateTask}
-        onClose={handleCloseModal}
-        onSuccess={() => {
-          console.log('Task created successfully!');
-          handleCloseModal(); // Cierra el modal después de éxito
-        }}
-      />
       <TaskTable />
     </div>
   );

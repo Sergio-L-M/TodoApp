@@ -2,7 +2,9 @@ package com.sergio.todolist.service;
 
 import com.sergio.todolist.model.Todo;
 import org.springframework.stereotype.Service;
+
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Optional;
@@ -10,6 +12,8 @@ import java.util.Map;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.time.Duration;
+
 @Service
 public class TodoService {
     private final Map<String, Todo> todoDatabase = new HashMap<>();
@@ -26,6 +30,7 @@ public class TodoService {
     public Optional<Todo> findById(String id){
         return Optional.ofNullable(todoDatabase.get(id));
     }
+
     public boolean deleteById(String id){
         if (todoDatabase.containsKey(id)){
             todoDatabase.remove(id);
@@ -33,6 +38,7 @@ public class TodoService {
         }
         return false;
     }
+
     public boolean updateById(String id, Todo updateTodo){
         Todo existigTodo = todoDatabase.get(id);
         if (existigTodo != null){
@@ -68,61 +74,84 @@ public class TodoService {
     public List<Todo> findAll(){
         return todoDatabase.values().stream().collect(Collectors.toList());
     }
+
     public List<Todo> filterAndSortTodos(
         List<Todo> todos,
         String sortBy,
         Boolean ascending,
         String startsWith,
-        List<String> priorities,  // Lista de prioridades
-        List<Boolean> doneStates  // Lista de estados
-) {
-    // Filtro: Palabras que empiezan con "startsWith"
+        List<String> priorities,
+        List<Boolean> doneStates
+    ) {
+    // Filtrar por palabras que comienzan con startsWith
     if (startsWith != null) {
         todos = todos.stream()
                 .filter(todo -> todo.getText().toLowerCase().startsWith(startsWith.toLowerCase()))
                 .collect(Collectors.toList());
     }
 
-    // Filtro: Filtrar por lista de prioridades
+    // Filtrar por prioridades
     if (priorities != null && !priorities.isEmpty()) {
         todos = todos.stream()
                 .filter(todo -> priorities.contains(todo.getPriority().toString()))
                 .collect(Collectors.toList());
     }
 
-    // Filtro: Filtrar por lista de estados "done"
+    // Filtrar por estados (done/undone)
     if (doneStates != null && !doneStates.isEmpty()) {
         todos = todos.stream()
                 .filter(todo -> doneStates.contains(todo.isDone()))
                 .collect(Collectors.toList());
     }
 
-    // Ordenar: Por "dueDate" o "priority"
+    // Ordenar por dueDate o priority
     if (sortBy != null) {
-        Comparator<Todo> comparator;
-        switch (sortBy) {
-            case "dueDate":
-                comparator = Comparator.comparing(Todo::getDueDate, Comparator.nullsLast(Comparator.naturalOrder()));
-                break;
-            case "priority":
-                comparator = Comparator.comparing(Todo::getPriority);
-                break;
-            default:
-                throw new IllegalArgumentException("Sort by must be 'dueDate' or 'priority'");
-        }
+        Comparator<Todo> comparator = "dueDate".equals(sortBy)
+                ? Comparator.comparing(Todo::getDueDate, Comparator.nullsLast(Comparator.naturalOrder()))
+                : Comparator.comparing(Todo::getPriority);
 
-        if (Boolean.FALSE.equals(ascending)) {  // Si "ascending" es false, invierte el orden
+        if (Boolean.FALSE.equals(ascending)) {
             comparator = comparator.reversed();
         }
 
         todos = todos.stream().sorted(comparator).collect(Collectors.toList());
     }
-   
-    return todos;  // Devuelve la lista filtrada y ordenada
-}
+
+        return todos;
+    }
 
 
+    public List<Todo> getPage(List<Todo> todos, int page, int pageSize) {
+        int fromIndex = page * pageSize;
+        int toIndex = Math.min(fromIndex + pageSize, todos.size());
+
+        if (fromIndex > todos.size()) {
+            return Collections.emptyList(); // Devuelve lista vacía si la página está fuera de rango
+        }
+
+        return todos.subList(fromIndex, toIndex);
+    }
 
 
+    public double calculateAverageTime() {
+        List<Todo> pendingTodos = todoDatabase.values().stream()
+                .filter(todo -> !todo.isDone())  
+                .collect(Collectors.toList());
+
+       
+        return pendingTodos.stream()
+                .mapToLong(todo -> Duration.between(todo.getCreationDate().atStartOfDay(), LocalDate.now().atStartOfDay()).toMinutes())
+                .average()
+                .orElse(0);  
+    }
+
+    public Map<Todo.Priority, Double> calculateAverageTimeByPriority() {
+        return todoDatabase.values().stream()
+                .filter(todo -> !todo.isDone()) 
+                .collect(Collectors.groupingBy(
+                        Todo::getPriority,
+                        Collectors.averagingDouble(todo -> Duration.between(todo.getCreationDate().atStartOfDay(), LocalDate.now().atStartOfDay()).toMinutes())
+                ));
+    }
     
 }
