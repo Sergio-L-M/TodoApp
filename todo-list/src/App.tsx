@@ -1,18 +1,25 @@
 import React, { useState } from 'react';
-import logo from './logo.svg';
 import './App.css';
-import TodoPopUp from './components/UpdateCreateTodo/TodoPopUp';
+
 import TaskTable from './components/TaskTable';
+import Metrics from './components/TodoMetrics/TodoMetrics';
+
 function App() {
-  const [showCreateTask, setShowCreateTask] = useState(false);
+  // Estado para controlar cuándo actualizar las métricas
+  const [refreshMetrics, setRefreshMetrics] = useState(false);
+
+  const handleTaskUpdate = () => {
+    // Cambia el estado para actualizar las métricas
+    setRefreshMetrics((prev) => !prev);
+  };
+
   return (
     <div className="App">
-      <div className="h-screen flex flex-col items-center gap-6  text-white">
-        <button onClick={()=> setShowCreateTask(true)} className="bg-violet-500 px-4 py-2 rounded-lg text-lg"> Create new Task</button>
-        {showCreateTask && <TodoPopUp onClose={() => setShowCreateTask(false)}/>}
-        <TaskTable/>
-      </div>
-      
+      {/* Componente de métricas */}
+      <Metrics refresh={refreshMetrics} />
+
+      {/* Tabla de tareas */}
+      <TaskTable onTaskUpdate={handleTaskUpdate} />
     </div>
   );
 }
