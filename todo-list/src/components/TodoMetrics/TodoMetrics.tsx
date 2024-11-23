@@ -1,5 +1,23 @@
 import React, { useEffect, useState } from "react";
-import { Paper, Typography, CircularProgress, Box } from "@mui/material";
+import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
+  Typography,
+  CircularProgress,
+  ListItem,
+  ListItemText,
+  List,
+  Box,
+  Chip,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+} from "@mui/material";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import axios from "axios";
 
 const Metrics: React.FC<{ refresh: boolean }> = ({ refresh }) => {
@@ -14,7 +32,7 @@ const Metrics: React.FC<{ refresh: boolean }> = ({ refresh }) => {
   const fetchMetrics = async () => {
     setLoading(true);
     try {
-      const response = await axios.get("http://localhost:8080/todos/metrics/pending");
+      const response = await axios.get("http://localhost:8080/metrics/pending");
       setMetrics(response.data);
     } catch (error) {
       console.error("Error fetching metrics:", error);
@@ -28,32 +46,57 @@ const Metrics: React.FC<{ refresh: boolean }> = ({ refresh }) => {
   }, [refresh]);
 
   return (
-    <Paper
-      elevation={3}
-      sx={{
-        p: 2,
-        mt: 2,
-        textAlign: "center",
-        bgcolor: "background.default",
-        color: "text.primary",
-      }}
-    >
+    <Box sx={{ mt: 3, mb: 3, mx: 2 }}>
       {loading ? (
         <CircularProgress />
       ) : metrics ? (
-        <Box>
-          <Typography variant="h6" gutterBottom>
-            Metrics Overview
-          </Typography>
-          <Typography>Average Time: {metrics.averageTime}</Typography>
-          <Typography>High Priority Avg: {metrics.averageTimeHigh}</Typography>
-          <Typography>Medium Priority Avg: {metrics.averageTimeMedium}</Typography>
-          <Typography>Low Priority Avg: {metrics.averageTimeLow}</Typography>
-        </Box>
+        <>
+          <Accordion defaultExpanded>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography variant="h6">General Metrics</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+                <Table>
+                    <TableHead>
+                        <TableCell>Average Time</TableCell>
+                        <TableCell>AVG TIME TO FINISH TASK BY PRIORITY</TableCell>
+                    </TableHead>
+                    <TableBody>
+                        <TableRow>
+                            <TableCell>
+                                <Typography>{metrics.averageTime}</Typography>
+                            </TableCell>
+                            <TableCell>
+                                <List>
+                                    <ListItem>
+                                        <Chip label="HIGH" variant="outlined" />
+                                            {metrics.averageTimeHigh}
+                                    </ListItem>
+                                    <ListItem>
+                                        <Chip label="MEDIUM" variant="outlined" />
+                                            {metrics.averageTimeMedium}
+                                    </ListItem>
+                                    <ListItem>
+                                        <Chip label="LOW" variant="outlined" />
+                                            {metrics.averageTimeLow}
+                                    </ListItem>                       
+                                </List>
+                            </TableCell>
+                        </TableRow>
+                    </TableBody>
+                </Table>
+
+              
+
+            </AccordionDetails>
+          </Accordion>
+
+
+        </>
       ) : (
         <Typography>No data available</Typography>
       )}
-    </Paper>
+    </Box>
   );
 };
 

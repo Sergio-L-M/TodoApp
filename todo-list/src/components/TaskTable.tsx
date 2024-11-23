@@ -132,9 +132,6 @@ const TaskTable: React.FC<{ onTaskUpdate: () => void }> = ({ onTaskUpdate }) => 
 
   return (
     <div>
-      <Typography variant="h4" gutterBottom>
-        Task List
-      </Typography>
       <TableContainer component={Paper}>
         <Table>
           <TableHead>
