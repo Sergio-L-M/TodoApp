@@ -27,7 +27,7 @@ interface Task {
   done: boolean;
 }
 
-const TaskTable: React.FC = () => {
+const TaskTable: React.FC<{ onTaskUpdate: () => void }> = ({ onTaskUpdate }) => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [openModal, setOpenModal] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
@@ -118,6 +118,7 @@ const TaskTable: React.FC = () => {
   const handleModalClose = () => {
     setOpenModal(false);
     setSelectedTask(null);
+    onTaskUpdate(); 
   };
 
   const applyFilters = () => {

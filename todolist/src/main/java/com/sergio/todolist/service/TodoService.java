@@ -135,23 +135,24 @@ public class TodoService {
 
     public double calculateAverageTime() {
         List<Todo> pendingTodos = todoDatabase.values().stream()
-                .filter(todo -> !todo.isDone())  
+                .filter(todo -> !todo.isDone() && todo.getDueDate() != null) // Filtra las tareas pendientes con dueDate
                 .collect(Collectors.toList());
-
-       
+    
         return pendingTodos.stream()
-                .mapToLong(todo -> Duration.between(todo.getCreationDate().atStartOfDay(), LocalDate.now().atStartOfDay()).toMinutes())
+                .mapToLong(todo -> Duration.between(todo.getCreationDate().atStartOfDay(), todo.getDueDate().atStartOfDay()).toMinutes())
                 .average()
-                .orElse(0);  
+                .orElse(0); // Retorna 0 si no hay tareas pendientes con dueDate
     }
+    
 
     public Map<Todo.Priority, Double> calculateAverageTimeByPriority() {
         return todoDatabase.values().stream()
-                .filter(todo -> !todo.isDone()) 
+                .filter(todo -> !todo.isDone() && todo.getDueDate() != null) // Filtra las tareas pendientes con dueDate
                 .collect(Collectors.groupingBy(
                         Todo::getPriority,
-                        Collectors.averagingDouble(todo -> Duration.between(todo.getCreationDate().atStartOfDay(), LocalDate.now().atStartOfDay()).toMinutes())
+                        Collectors.averagingDouble(todo -> Duration.between(todo.getCreationDate().atStartOfDay(), todo.getDueDate().atStartOfDay()).toMinutes())
                 ));
     }
+    
     
 }
