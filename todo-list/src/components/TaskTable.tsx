@@ -67,7 +67,7 @@ const TaskTable: React.FC<{ onTaskUpdate: () => void }> = ({ onTaskUpdate }) => 
       if (filters.priority.length > 0) filters.priority.forEach((priority) => params.append("priority", priority));
       if (filters.done.length > 0) filters.done.forEach((done) => params.append("done", done));
 
-      const response = await axios.get(`http://localhost:8080/todos?${params.toString()}`);
+      const response = await axios.get(`http://localhost:9090/todos?${params.toString()}`);
       const { todos, totalPages, totalItems } = response.data;
 
       setTasks(todos);
@@ -93,7 +93,7 @@ const TaskTable: React.FC<{ onTaskUpdate: () => void }> = ({ onTaskUpdate }) => 
 
     try {
       await axios.put(
-        `http://localhost:8080/todos/${task.id}/done`,
+        `http://localhost:9090/todos/${task.id}/done`,
         { done: updatedDone },
         { headers: { "Content-Type": "application/json" } }
       );
@@ -109,7 +109,17 @@ const TaskTable: React.FC<{ onTaskUpdate: () => void }> = ({ onTaskUpdate }) => 
     fetchTasks(column, isAscending);
   };
   
-
+  const handleDelete = async (id: string) => {
+    try {
+      await axios.delete(`http://localhost:9090/todos/${id}`);
+      alert("Task deleted successfully");
+      fetchTasks(); // Refresca la lista de tareas
+      onTaskUpdate(); // Actualiza métricas
+    } catch (error) {
+      console.error("Failed to delete task:", error);
+      alert("Failed to delete task. Please try again.");
+    }
+  };
   const handleEdit = (task: Task) => {
     setSelectedTask(task);
     setOpenModal(true);
@@ -229,7 +239,12 @@ const TaskTable: React.FC<{ onTaskUpdate: () => void }> = ({ onTaskUpdate }) => 
                   >
                     Edit
                   </Button>
-                  <Button variant="outlined" color="secondary" size="small">
+                  <Button
+                    variant="outlined"
+                    color="secondary"
+                    size="small"
+                    onClick={() => handleDelete(task.id)}
+                  >
                     Delete
                   </Button>
                 </TableCell>

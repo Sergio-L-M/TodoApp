@@ -32,7 +32,7 @@ const Metrics: React.FC<{ refresh: boolean }> = ({ refresh }) => {
   const fetchMetrics = async () => {
     setLoading(true);
     try {
-      const response = await axios.get("http://localhost:8080/metrics/pending");
+      const response = await axios.get("http://localhost:9090/todos/metrics/pending");
       setMetrics(response.data);
     } catch (error) {
       console.error("Error fetching metrics:", error);
@@ -42,7 +42,7 @@ const Metrics: React.FC<{ refresh: boolean }> = ({ refresh }) => {
   };
 
   useEffect(() => {
-    fetchMetrics(); // Actualiza las métricas cuando el prop `refresh` cambia
+    fetchMetrics();
   }, [refresh]);
 
   return (
@@ -85,13 +85,8 @@ const Metrics: React.FC<{ refresh: boolean }> = ({ refresh }) => {
                         </TableRow>
                     </TableBody>
                 </Table>
-
-              
-
             </AccordionDetails>
           </Accordion>
-
-
         </>
       ) : (
         <Typography>No data available</Typography>

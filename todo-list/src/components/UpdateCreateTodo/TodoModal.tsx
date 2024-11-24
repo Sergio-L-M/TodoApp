@@ -9,7 +9,9 @@ import {
   Select,
   FormControl,
   InputLabel,
+  IconButton, InputAdornment 
 } from "@mui/material";
+import ClearIcon from "@mui/icons-material/Clear";
 import axios from "axios";
 
 interface Task {
@@ -46,34 +48,38 @@ const TodoModal: React.FC<TodoModalProps> = ({ open, onClose, initialTask, onSuc
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-
+  
     const taskData: Task = {
       text,
-      priority,
-      dueDate: dueDate || null,
+      priority: priority || "LOW", // Enviar null si está vacío
+      dueDate: dueDate || "",   // Enviar null si está vacío
     };
 
+  
     try {
       if (initialTask && initialTask.id) {
         // Modo edición: Realizar PUT
-        await axios.put(`http://localhost:8080/todos/${initialTask.id}`, taskData, {
+        await axios.put(`http://localhost:9090/todos/${initialTask.id}`, taskData, {
           headers: { "Content-Type": "application/json" },
         });
         alert("Task updated successfully!");
       } else {
         // Modo creación: Realizar POST
-        await axios.post("http://localhost:8080/todos", taskData, {
+        await axios.post("http://localhost:9090/todos", taskData, {
           headers: { "Content-Type": "application/json" },
         });
         alert("Task created successfully!");
       }
-
+  
       if (onSuccess) onSuccess(); // Actualiza la tabla
       onClose(); // Cierra el modal
     } catch (error) {
       console.error("Error submitting task:", error);
       alert("Failed to submit task. Check the console for more details.");
     }
+  };
+  const handleClearDate = () => {
+    setDueDate(""); // Establece el estado de la fecha como vacío
   };
 
   return (
@@ -105,34 +111,43 @@ const TodoModal: React.FC<TodoModalProps> = ({ open, onClose, initialTask, onSuc
             margin="normal"
           />
 
-          {/* Selector de prioridad */}
           <FormControl fullWidth margin="normal">
             <InputLabel>Priority</InputLabel>
             <Select
               value={priority}
               onChange={(e) => setPriority(e.target.value)}
-              displayEmpty
+              
             >
               <MenuItem value="LOW">Low</MenuItem>
               <MenuItem value="MEDIUM">Medium</MenuItem>
               <MenuItem value="HIGH">High</MenuItem>
             </Select>
           </FormControl>
-
-          {/* Campo de fecha */}
           <TextField
-            label="Due Date"
-            type="date"
-            value={dueDate}
-            onChange={(e) => setDueDate(e.target.value)}
-            fullWidth
-            margin="normal"
-            InputLabelProps={{
-              shrink: true, // Hace que la etiqueta "flote" al usar el calendario
-            }}
-          />
+        label="Due Date"
+        type="date"
+        value={dueDate || ""}
+        onChange={(e) => setDueDate(e.target.value)}
+        fullWidth
+        margin="normal"
+        InputLabelProps={{
+          shrink: true,
+        }}
+        InputProps={{
+          endAdornment: dueDate && (
+            <InputAdornment position="end">
+              <IconButton onClick={handleClearDate} aria-label="Clear date">
+                <ClearIcon />
+              </IconButton>
+            </InputAdornment>
+          ),
+          style: {
+            color: dueDate ? "inherit" : "white", // Cambia el color si no hay fecha seleccionada
+          },
+        }}
+        placeholder="No date selected"
+      />
 
-          {/* Botón de envío */}
           <Button
             type="submit"
             variant="contained"
