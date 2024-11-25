@@ -7,8 +7,8 @@ import {
   Box 
 } from "@mui/material";
 
-import TaskTable from './components/TaskTable';
-import Metrics from './components/TodoMetrics/TodoMetrics';
+import TaskTable from './components/table/TodoTable';
+import Metrics from './components/metrics/TodoMetrics';
 
 function App() {
 

@@ -17,7 +17,7 @@ import {
   TableSortLabel,
 } from "@mui/material";
 import axios from "axios";
-import TodoModal from "./UpdateCreateTodo/TodoModal";
+import TodoModal from "../modal/TodoModal";
 
 interface Task {
   id: string;
