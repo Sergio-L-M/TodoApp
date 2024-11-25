@@ -38,6 +38,7 @@ public class TodoController {
     @PostMapping
     public ResponseEntity<Todo> createTodo(@RequestBody @Valid Todo todo) {
         //TODO: process POST request
+        System.out.println("Se hixo unn post");
         Todo createdTodo = todoService.save(todo);
         return new ResponseEntity<>(createdTodo, HttpStatus.CREATED);
     }

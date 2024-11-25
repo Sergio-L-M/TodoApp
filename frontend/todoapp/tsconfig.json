@@ -22,16 +22,7 @@
   },
   "include": [
     "src"
-  ],
-  
-    "compilerOptions": {
-      "target": "ES6",
-      "module": "CommonJS",
-      "jsx": "react",
-      "esModuleInterop": true,
-      "allowSyntheticDefaultImports": true,
-      "skipLibCheck": true
-    }
+  ]
   
   
 }

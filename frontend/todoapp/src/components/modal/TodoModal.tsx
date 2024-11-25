@@ -112,17 +112,18 @@ const TodoModal: React.FC<TodoModalProps> = ({ open, onClose, initialTask, onSuc
           />
 
           <FormControl fullWidth margin="normal">
-            <InputLabel>Priority</InputLabel>
+            <InputLabel id="priority-label">Priority</InputLabel>
             <Select
+              labelId="priority-label" // Asocia el InputLabel con el Select
               value={priority}
               onChange={(e) => setPriority(e.target.value)}
-              
             >
               <MenuItem value="LOW">Low</MenuItem>
               <MenuItem value="MEDIUM">Medium</MenuItem>
               <MenuItem value="HIGH">High</MenuItem>
             </Select>
           </FormControl>
+
           <TextField
         label="Due Date"
         type="date"
@@ -142,7 +143,7 @@ const TodoModal: React.FC<TodoModalProps> = ({ open, onClose, initialTask, onSuc
             </InputAdornment>
           ),
           style: {
-            color: dueDate ? "inherit" : "white", // Cambia el color si no hay fecha seleccionada
+            color: dueDate ? "inherit" : "white", 
           },
         }}
         placeholder="No date selected"

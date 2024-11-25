@@ -58,8 +58,11 @@ const Metrics: React.FC<{ refresh: boolean }> = ({ refresh }) => {
             <AccordionDetails>
                 <Table>
                     <TableHead>
+                    <TableRow>
+
                         <TableCell>Average Time</TableCell>
                         <TableCell>AVG TIME TO FINISH TASK BY PRIORITY</TableCell>
+                        </TableRow>
                     </TableHead>
                     <TableBody>
                         <TableRow>

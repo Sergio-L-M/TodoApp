@@ -1,47 +1,80 @@
-import React from "react";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
-import App from "./App";
+import React, { useState } from "react";
+import { render, screen, fireEvent, act } from "@testing-library/react";
+import TodoModal from "./components/modal/TodoModal";
 
-describe("ToDo App - Task Creation Component Interaction", () => {
-  it("should open the modal, allow task creation, and update the task list", async () => {
-    // Renderizar la aplicación
-    render(<App />);
-
-    // Verificar que el botón "Add New Task" está visible
-    const addTaskButton = screen.getByText(/Add New Task/i);
-    expect(addTaskButton).toBeInTheDocument();
-
-    // Abrir el modal
-    fireEvent.click(addTaskButton);
-
-    // Verificar que el modal se muestra
-    expect(screen.getByText(/Create Task/i)).toBeInTheDocument();
-
-    // Completar el formulario
-    const taskNameInput = screen.getByLabelText(/Task Name/i);
-    userEvent.type(taskNameInput, "Frontend Task");
-
-    const prioritySelect = screen.getByLabelText(/Priority/i);
-    fireEvent.change(prioritySelect, { target: { value: "HIGH" } });
-
-    const dueDateInput = screen.getByLabelText(/Due Date/i);
-    fireEvent.change(dueDateInput, { target: { value: "2024-12-01" } });
-
-    // Simular envío del formulario
-    const submitButton = screen.getByText(/Add Task/i);
-    fireEvent.click(submitButton);
-
-    // Validar que el modal se cierra después del envío
-    await waitFor(() => {
-      expect(screen.queryByText(/Create Task/i)).not.toBeInTheDocument();
-    });
-
-    // Validar que la nueva tarea aparece en la lista de tareas
-    await waitFor(() => {
-      expect(screen.getByText(/Frontend Task/i)).toBeInTheDocument();
-      expect(screen.getByText(/HIGH/i)).toBeInTheDocument();
-      expect(screen.getByText(/2024-12-01/i)).toBeInTheDocument();
-    });
+describe("TodoModal Component", () => {
+  it("renders correctly when open", () => {
+    render(<TodoModal open={true} onClose={jest.fn()} onSuccess={jest.fn()} />);
+    expect(screen.getByText("Create Task")).toBeInTheDocument();
   });
+
+  it("calls handleModalClose and closes the modal when Escape is pressed", () => {
+    const handleModalClose = jest.fn();
+    const Wrapper = () => {
+      const [open, setOpen] = useState(true);
+
+      const handleClose = () => {
+        setOpen(false); 
+        handleModalClose(); 
+      };
+
+      return (
+        <TodoModal
+          open={open}
+          onClose={handleClose}
+          initialTask={null}
+          onSuccess={jest.fn()}
+        />
+      );
+    };
+
+    render(<Wrapper />);
+    expect(screen.getByText("Create Task")).toBeInTheDocument();
+    const modalNode = screen.getByText("Create Task").closest("div");
+    act(() => {
+      fireEvent.keyDown(modalNode || document, { key: "Escape" });
+    });
+    expect(handleModalClose).toHaveBeenCalled();
+    expect(screen.queryByText("Create Task")).not.toBeInTheDocument();
+  });
+  it("creates a new task and shows a success alert", async () => {
+    const mockOnSuccess = jest.fn();
+    const mockOnClose = jest.fn();
+  
+    // Mockea window.alert
+    const alertMock = jest.spyOn(window, "alert").mockImplementation(() => {});
+  
+    render(
+      <TodoModal
+        open={true}
+        onClose={mockOnClose}
+        initialTask={null}
+        onSuccess={mockOnSuccess}
+      />
+    );
+  
+    // Llenar los campos del formulario
+    fireEvent.change(screen.getByLabelText(/task name/i), {
+      target: { value: "Integration Test Task" },
+    });
+  
+    fireEvent.mouseDown(screen.getByLabelText(/priority/i));
+    const priorityOption = screen.getByText("Medium");
+    fireEvent.click(priorityOption);
+  
+    fireEvent.change(screen.getByLabelText(/due date/i), {
+      target: { value: "2024-12-31" },
+    });
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: /add task/i }));
+    });
+  
+    expect(alertMock).toHaveBeenCalledWith("Task created successfully!");
+    expect(mockOnSuccess).toHaveBeenCalled();
+    expect(mockOnClose).toHaveBeenCalled();
+  
+    alertMock.mockRestore();
+  });
+  
 });
