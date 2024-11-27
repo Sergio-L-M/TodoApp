@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -27,7 +28,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 @RestController
 @RequestMapping("/todos")
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "http://localhost:8080")
 public class TodoController {
     private final TodoService todoService;
 
@@ -37,12 +38,14 @@ public class TodoController {
 
     @PostMapping
     public ResponseEntity<Todo> createTodo(@RequestBody @Valid Todo todo) {
-        //TODO: process POST request
-        System.out.println("Se hixo unn post");
+    
+        if (todo.getDueDate() != null && todo.getDueDate().isBefore(LocalDate.now())) {
+            throw new IllegalArgumentException("Due date cannot be earlier than creation date");
+        }
+        System.out.println("Se hizo un POST");
         Todo createdTodo = todoService.save(todo);
         return new ResponseEntity<>(createdTodo, HttpStatus.CREATED);
-    }
-    
+}
     @GetMapping
     public ResponseEntity<Map<String, Object>> getTodos(
             @RequestParam(defaultValue = "0") int page,               // Número de página (por defecto 0)
@@ -111,6 +114,9 @@ public class TodoController {
     }
     @PutMapping("/{id}")
     public ResponseEntity<Void> updateTodo(@PathVariable String id, @RequestBody @Valid Todo updatedTodo){
+        if (updatedTodo.getDueDate() != null && updatedTodo.getDueDate().isBefore(LocalDate.now())) {
+            throw new IllegalArgumentException("Due date cannot be earlier than creation date");
+        }
         boolean updated = todoService.updateById(id, updatedTodo);
         if (updated){
             return ResponseEntity.noContent().build();

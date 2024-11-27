@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -9,144 +9,66 @@ import {
   Paper,
   Button,
   Checkbox,
-  Typography,
   TablePagination,
   TextField,
   Select,
   MenuItem,
   TableSortLabel,
+  Chip
 } from "@mui/material";
-import axios from "axios";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState, AppDispatch } from "../../app/store";
+import { handlePageChange, handlePageSizeChange, handleSort, handleEdit, handleDelete, handleToggleDone, applyFilters, clearFilters } from "../../features/todoHandlers/todoHandlersIndex";
+import { setModalOpen, setFilters } from "../../features/todoSlice";
 import TodoModal from "../modal/TodoModal";
+const renderPriority = (priority:String) => {
+  let color;
 
-interface Task {
-  id: string;
-  text: string;
-  priority: string;
-  dueDate: string | null;
-  done: boolean;
-}
+  switch (priority) {
+    case "HIGH":
+      color = "red";
+      break;
+    case "MEDIUM":
+      color = "orange";
+      break;
+    case "LOW":
+      color = "green";
+      break;
+    default:
+      color = "black"; // Color por defecto si no coincide ninguna prioridad
+  }
 
-const TaskTable: React.FC<{ onTaskUpdate: () => void }> = ({ onTaskUpdate }) => {
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [openModal, setOpenModal] = useState(false);
-  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
-  const [pagination, setPagination] = useState({
-    currentPage: 0,
-    pageSize: 10,
-    totalPages: 1,
-    totalItems: 0,
-  });
-  const [filters, setFilters] = useState({
-    done: [] as string[],
-    text: "",
-    priority: [] as string[],
-  });
-  const [sortConfig, setSortConfig] = useState<{ sortBy: "dueDate" | "priority"; ascending: boolean }>({
-    sortBy: "dueDate",
-    ascending: true,
-  });
+  return (
+    <Chip
+      label={priority}
+      variant="outlined"
+      style={{
+        color: color,
+        borderColor: color,
+        backgroundColor: "white",
+      }}
+    />
+  );
+};
+
+
+
+
+
+const TaskTableV2: React.FC = () => {
+  const dispatch = useDispatch<AppDispatch>();
+  const { tasks, filters, pagination, sortConfig, modalOpen, selectedTask } = useSelector((state: RootState) => state.todos);
 
   useEffect(() => {
-    fetchTasks();
-  }, []);
-
-  const fetchTasks = async (
-    sortBy: "dueDate" | "priority" = sortConfig.sortBy,
-    ascending: boolean = sortConfig.ascending,
-    page: number = pagination.currentPage,
-    pageSize: number = pagination.pageSize
-  ) => {
-    try {
-      const params = new URLSearchParams();
-      params.append("page", page.toString());
-      params.append("pageSize", pageSize.toString());
-      if (sortBy) params.append("sortBy", sortBy);
-      if (ascending !== undefined) params.append("ascending", ascending.toString());
-      if (filters.text) params.append("startsWith", filters.text);
-      if (filters.priority.length > 0) filters.priority.forEach((priority) => params.append("priority", priority));
-      if (filters.done.length > 0) filters.done.forEach((done) => params.append("done", done));
-
-      const response = await axios.get(`http://localhost:9090/todos?${params.toString()}`);
-      const { todos, totalPages, totalItems } = response.data;
-
-      setTasks(todos);
-      setPagination({ currentPage: page, pageSize, totalPages, totalItems });
-    } catch (error) {
-      console.error("Error fetching tasks:", error);
-    }
-  };
-
-  const handlePageChange = (event: React.MouseEvent<HTMLButtonElement> | null, newPage: number) => {
-    setPagination({ ...pagination, currentPage: newPage });
-    fetchTasks(sortConfig.sortBy, sortConfig.ascending, newPage, pagination.pageSize);
-  };
-
-  const handlePageSizeChange = (event: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => {
-    const newPageSize = parseInt(event.target.value, 10);
-    setPagination({ currentPage: 0, pageSize: newPageSize, totalPages: pagination.totalPages, totalItems: pagination.totalItems });
-    fetchTasks(sortConfig.sortBy, sortConfig.ascending, 0, newPageSize);
-  };
-
-  const handleToggleDone = async (task: Task) => {
-    const updatedDone = !task.done;
-
-    try {
-      await axios.put(
-        `http://localhost:9090/todos/${task.id}/done`,
-        { done: updatedDone },
-        { headers: { "Content-Type": "application/json" } }
-      );
-
-      setTasks(tasks.map((t) => (t.id === task.id ? { ...t, done: updatedDone } : t)));
-    } catch (error) {
-      console.error("Failed to toggle done status:", error);
-    }
-  };
-  const handleSort = (column: "dueDate" | "priority") => {
-    const isAscending = sortConfig.sortBy === column ? !sortConfig.ascending : true;
-    setSortConfig({ sortBy: column, ascending: isAscending });
-    fetchTasks(column, isAscending);
-  };
-  
-  const handleDelete = async (id: string) => {
-    try {
-      await axios.delete(`http://localhost:9090/todos/${id}`);
-      alert("Task deleted successfully");
-      fetchTasks(); // Refresca la lista de tareas
-      onTaskUpdate(); // Actualiza métricas
-    } catch (error) {
-      console.error("Failed to delete task:", error);
-      alert("Failed to delete task. Please try again.");
-    }
-  };
-  const handleEdit = (task: Task) => {
-    setSelectedTask(task);
-    setOpenModal(true);
-  };
-
-  const handleModalClose = () => {
-    setOpenModal(false);
-    setSelectedTask(null);
-    onTaskUpdate(); 
-  };
-
-  const applyFilters = () => {
-    fetchTasks();
-  };
-
-  const clearFilters = () => {
-    setFilters({ done: [], text: "", priority: [] });
-    fetchTasks();
-  };
+    dispatch(applyFilters());
+  }, [dispatch]);
 
   return (
     <div>
       <TableContainer component={Paper}>
         <Table>
           <TableHead>
-
-            {/* Fila de Headers */}
+            {/* Headers */}
             <TableRow>
               <TableCell>Done</TableCell>
               <TableCell>Name</TableCell>
@@ -154,7 +76,7 @@ const TaskTable: React.FC<{ onTaskUpdate: () => void }> = ({ onTaskUpdate }) => 
                 <TableSortLabel
                   active={sortConfig.sortBy === "priority"}
                   direction={sortConfig.ascending ? "asc" : "desc"}
-                  onClick={() => handleSort("priority")}
+                  onClick={() => dispatch(handleSort("priority"))}
                 >
                   Priority
                 </TableSortLabel>
@@ -163,20 +85,21 @@ const TaskTable: React.FC<{ onTaskUpdate: () => void }> = ({ onTaskUpdate }) => 
                 <TableSortLabel
                   active={sortConfig.sortBy === "dueDate"}
                   direction={sortConfig.ascending ? "asc" : "desc"}
-                  onClick={() => handleSort("dueDate")}
+                  onClick={() => dispatch(handleSort("dueDate"))}
                 >
                   Due Date
                 </TableSortLabel>
               </TableCell>
               <TableCell>Actions</TableCell>
             </TableRow>
-              {/* Fila de Filtros */}
-              <TableRow>
+
+            {/* Filters */}
+            <TableRow>
               <TableCell>
                 <Select
                   multiple
                   value={filters.done}
-                  onChange={(e) => setFilters({ ...filters, done: e.target.value as string[] })}
+                  onChange={(e) => dispatch(setFilters({ ...filters, done: e.target.value as string[] }))}
                   renderValue={(selected) => selected.join(", ")}
                   fullWidth
                   displayEmpty
@@ -188,7 +111,7 @@ const TaskTable: React.FC<{ onTaskUpdate: () => void }> = ({ onTaskUpdate }) => 
               <TableCell>
                 <TextField
                   value={filters.text}
-                  onChange={(e) => setFilters({ ...filters, text: e.target.value })}
+                  onChange={(e) => dispatch(setFilters({ ...filters, text: e.target.value }))}
                   placeholder="Search name"
                   fullWidth
                 />
@@ -197,7 +120,7 @@ const TaskTable: React.FC<{ onTaskUpdate: () => void }> = ({ onTaskUpdate }) => 
                 <Select
                   multiple
                   value={filters.priority}
-                  onChange={(e) => setFilters({ ...filters, priority: e.target.value as string[] })}
+                  onChange={(e) => dispatch(setFilters({ ...filters, priority: e.target.value as string[] }))}
                   renderValue={(selected) => selected.join(", ")}
                   fullWidth
                   displayEmpty
@@ -207,14 +130,12 @@ const TaskTable: React.FC<{ onTaskUpdate: () => void }> = ({ onTaskUpdate }) => 
                   <MenuItem value="HIGH">High</MenuItem>
                 </Select>
               </TableCell>
+              <TableCell></TableCell>
               <TableCell>
-                
-              </TableCell>
-              <TableCell>
-                <Button variant="contained" color="primary" onClick={applyFilters} style={{ marginRight: "8px" }}>
+                <Button variant="contained" color="primary" onClick={() => dispatch(applyFilters())} style={{ marginRight: "8px" }}>
                   Apply Filter
                 </Button>
-                <Button variant="outlined" color="secondary" onClick={clearFilters}>
+                <Button variant="outlined" color="secondary" onClick={() => dispatch(clearFilters())}>
                   Clear Filter
                 </Button>
               </TableCell>
@@ -224,10 +145,10 @@ const TaskTable: React.FC<{ onTaskUpdate: () => void }> = ({ onTaskUpdate }) => 
             {tasks.map((task) => (
               <TableRow key={task.id}>
                 <TableCell>
-                  <Checkbox checked={task.done} color="primary" onChange={() => handleToggleDone(task)} />
+                  <Checkbox checked={task.done} color="primary" onChange={() => dispatch(handleToggleDone(task.id))} />
                 </TableCell>
                 <TableCell>{task.text}</TableCell>
-                <TableCell>{task.priority}</TableCell>
+                <TableCell>{renderPriority(task.priority)}</TableCell>
                 <TableCell>{task.dueDate || "-"}</TableCell>
                 <TableCell>
                   <Button
@@ -235,7 +156,7 @@ const TaskTable: React.FC<{ onTaskUpdate: () => void }> = ({ onTaskUpdate }) => 
                     color="primary"
                     size="small"
                     style={{ marginRight: "5px" }}
-                    onClick={() => handleEdit(task)}
+                    onClick={() => dispatch(handleEdit(task))}
                   >
                     Edit
                   </Button>
@@ -243,7 +164,7 @@ const TaskTable: React.FC<{ onTaskUpdate: () => void }> = ({ onTaskUpdate }) => 
                     variant="outlined"
                     color="secondary"
                     size="small"
-                    onClick={() => handleDelete(task.id)}
+                    onClick={() => dispatch(handleDelete(task.id))}
                   >
                     Delete
                   </Button>
@@ -253,7 +174,7 @@ const TaskTable: React.FC<{ onTaskUpdate: () => void }> = ({ onTaskUpdate }) => 
           </TableBody>
         </Table>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px" }}>
-          <Button variant="contained" color="primary" onClick={() => setOpenModal(true)}>
+          <Button variant="contained" color="primary" onClick={() => dispatch(setModalOpen(true))}>
             Add New Task
           </Button>
           <TablePagination
@@ -262,15 +183,15 @@ const TaskTable: React.FC<{ onTaskUpdate: () => void }> = ({ onTaskUpdate }) => 
             count={pagination.totalItems}
             rowsPerPage={pagination.pageSize}
             page={pagination.currentPage}
-            onPageChange={handlePageChange}
-            onRowsPerPageChange={handlePageSizeChange}
+            onPageChange={(_, page) => dispatch(handlePageChange(page))}
+            onRowsPerPageChange={(e) => dispatch(handlePageSizeChange(parseInt(e.target.value, 10)))}
           />
         </div>
       </TableContainer>
 
-      <TodoModal open={openModal} onClose={handleModalClose} initialTask={selectedTask} onSuccess={fetchTasks} />
+      <TodoModal open={modalOpen} onClose={() => dispatch(setModalOpen(false))} initialTask={selectedTask} onSuccess={() => dispatch(applyFilters())} />
     </div>
   );
 };
 
-export default TaskTable;
+export default TaskTableV2;

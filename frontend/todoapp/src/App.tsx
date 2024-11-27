@@ -7,15 +7,10 @@ import {
   Box 
 } from "@mui/material";
 
-import TaskTable from './components/table/TodoTable';
 import Metrics from './components/metrics/TodoMetrics';
-
+import TaskTableV2 from './components/table/TodoTable';
 function App() {
 
-  const [refreshMetrics, setRefreshMetrics] = useState(false);
-  const handleTaskUpdate = () => {
-    setRefreshMetrics((prev) => !prev);
-  };
 
   return (
 
@@ -34,9 +29,10 @@ function App() {
           </Typography>
       </AppBar>
  
-      <Metrics refresh={refreshMetrics} />
+      <Metrics/>
       <Box sx={{ mt: 3, mb: 3, mx: 2 }}>
-        <TaskTable onTaskUpdate={handleTaskUpdate} />
+        {/*<TaskTable onTaskUpdate={handleTaskUpdate} />*/}
+        <TaskTableV2/>
       </Box>
       
     </div>
