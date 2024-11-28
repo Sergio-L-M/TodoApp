@@ -1,5 +1,15 @@
 # TODO App
 
+## Table of Contents
+- [Introduction](#introduction)
+- [Frontend Overview](#frontend-overview)
+- [Backend Overview](#backend-overview)
+- [How to Run the Project](#how-to-run-the-project)
+- [Functional Requirements](#functional-requirements)
+- [Endpoints](#endpoints)
+- [Screenshots](#screenshots)
+
+---
 ## Introduction  
 Welcome to the **TODO App**! This application was developed to help users manage their tasks efficiently.  
 My name is **Sergio López Maldonado**, and this project demonstrates an intuitive and powerful task management solution.  
@@ -59,19 +69,7 @@ This application meets the following client requirements:
 - Analyze average time between task creation and completion.  
 - Metrics are grouped by task priority to help users measure their performance.
 
----
-# TODO App
 
-## Table of Contents
-- [Introduction](#introduction)
-- [Frontend Overview](#frontend-overview)
-- [Backend Overview](#backend-overview)
-- [How to Run the Project](#how-to-run-the-project)
-- [Functional Requirements](#functional-requirements)
-- [Endpoints](#endpoints)
-- [Screenshots](#screenshots)
-
----
 
 ## Introduction
 
