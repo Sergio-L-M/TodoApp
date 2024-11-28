@@ -70,7 +70,7 @@ const { fetchMetrics } = useMetrics();
             { done: !prevDoneVal },
             { headers: { "Content-Type": "application/json" } }
         );
-        updateTodos();
+       updateTodos();
 
     } catch (error) {
         console.error("Failed to toggle done status:", error);
@@ -125,7 +125,7 @@ const { fetchMetrics } = useMetrics();
             </TableRow>
         
         ))
-        };
+        }
          
    
     <TodoModal open={modalOpen} onClose={() => setModalOpen(false)} initialTask={todo} onSuccess={() => updateTodos()} />

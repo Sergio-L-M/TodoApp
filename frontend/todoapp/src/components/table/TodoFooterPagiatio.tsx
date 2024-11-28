@@ -67,7 +67,7 @@ export const TodoFooter: React.FC<FooterProps> = ({
 
       {/* Componente de paginación */}
       <TablePagination
-        rowsPerPageOptions={[10, 25, 50]} // Opciones de filas por página
+        rowsPerPageOptions={[10]} // Opciones de filas por página
         component="div"
         count={pagination.totalItems} // Total de elementos
         rowsPerPage={pagination.pageSize} // Tamaño de página actual
