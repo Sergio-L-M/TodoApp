@@ -6,8 +6,7 @@
 - [Backend Overview](#backend-overview)
 - [How to Run the Project](#how-to-run-the-project)
 - [Functional Requirements](#functional-requirements)
-- [Endpoints](#endpoints)
-- [Screenshots](#screenshots)
+- [How to run the app?](#how-to-Run-the-app)
 
 ---
 ## Introduction  
@@ -223,7 +222,7 @@ The backend uses the following key dependencies (defined in `pom.xml`):
 
 ---
 
-## How to Run the Backend
+## How to Run the app
 
 ### Prerequisites
 1. **Java Development Kit (JDK)**: Version 21 or higher.
