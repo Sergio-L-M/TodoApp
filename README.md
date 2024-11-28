@@ -232,7 +232,7 @@ The backend uses the following key dependencies (defined in `pom.xml`):
 1. Clone the Repository
 Download the project from the repository:
 ```console
-   git clone https://github.com/your-username/todo-app.git
+   git clone https://github.com/Sergio-L-M/TodoApp.git
 ```
 2. Go to todolist and run tests and start the backend
 ```console
