@@ -35,8 +35,9 @@ public class Todo {
     public Todo(String text, Priority priority, LocalDate dueDate){
         this.text =  text;
         this.priority = priority;
-        this.dueDate = dueDate;
+        
         this.creationDate = LocalDate.now();
+        this.dueDate = dueDate;
         this.done = false;
     }
     

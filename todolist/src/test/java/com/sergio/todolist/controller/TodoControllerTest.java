@@ -21,16 +21,16 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(TodoController.class) // Prueba del controlador específico
+@WebMvcTest(TodoController.class) 
 public class TodoControllerTest {
 
     @Autowired
-    private MockMvc mockMvc; // Simula las solicitudes HTTP
+    private MockMvc mockMvc; 
 
     @MockBean
-    private TodoService todoService; // Simula el servicio usado por el controlador
+    private TodoService todoService; 
 
-    // Prueba: Crear 30 tareas
+
     @Test
     void testCreateTodos() throws Exception {
         for (int i = 1; i <= 30; i++) {
@@ -58,7 +58,6 @@ public class TodoControllerTest {
         }
     }
 
-    // Prueba: Editar una tarea existente
     @Test
     void testUpdateTodo() throws Exception {
         String updatedTodoJson = """
@@ -68,17 +67,15 @@ public class TodoControllerTest {
                 "dueDate": "2024-12-31"
             }
         """;
-
         when(todoService.updateById(eq("1"), any(Todo.class))).thenReturn(true);
-
         mockMvc.perform(put("/todos/1")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(updatedTodoJson))
-                .andExpect(status().isNoContent()); // Verifica que la respuesta sea 204
+                .andExpect(status().isNoContent()); 
     }
+
     @Test
     void testFilterSortPaginateTodos() throws Exception {
-        // Simula una lista de 5 tareas
         List<Todo> todos = IntStream.rangeClosed(1, 5).mapToObj(i -> {
             Todo todo = new Todo();
             todo.setId(String.valueOf(i));
@@ -87,58 +84,49 @@ public class TodoControllerTest {
             todo.setDone(false);
             return todo;
         }).collect(Collectors.toList());
-    
-        // Simula que el servicio devuelva las 5 tareas para filtros y ordenamientos
         when(todoService.findAll()).thenReturn(todos);
         when(todoService.filterAndSortTodos(anyList(), any(), any(), any(), any(), any()))
-                .thenReturn(todos.subList(0, 2)); // Simula solo 2 tareas después del filtro
+                .thenReturn(todos.subList(0, 2)); 
         when(todoService.getPage(anyList(), eq(0), eq(10)))
-                .thenReturn(todos.subList(0, 2)); // Simula solo la página 0 con 2 tareas
+                .thenReturn(todos.subList(0, 2));
     
-        // Realiza la solicitud GET al endpoint
         mockMvc.perform(get("/todos?page=0&pageSize=10"))
-                .andExpect(status().isOk()) // Verifica que el estado sea 200
-                .andExpect(jsonPath("$.todos.length()").value(2)); // Verifica que haya 2 tareas
+                .andExpect(status().isOk()) 
+                .andExpect(jsonPath("$.todos.length()").value(2)); 
     }
     
-    // Prueba: Marcar tarea como hecha
     @Test
     void testMarkTodoAsDone() throws Exception {
-        // Simula que el servicio actualiza correctamente la tarea
+       
         when(todoService.updateDoneStatus("1", true)).thenReturn(true);
-
-        // Cuerpo de la solicitud (JSON)
         String requestBody = """
             {
                 "done": true
             }
         """;
 
-        // Realiza la solicitud PUT con el cuerpo JSON
         mockMvc.perform(put("/todos/1/done")
-                .contentType(MediaType.APPLICATION_JSON) // Tipo de contenido JSON
-                .content(requestBody)) // Cuerpo de la solicitud
-                .andExpect(status().isNoContent()); // Verifica que el estado sea 204
+                .contentType(MediaType.APPLICATION_JSON) 
+                .content(requestBody))
+                .andExpect(status().isNoContent()); 
     }
 
-    // Prueba: Marcar tarea como deshecha
+   
     @Test
     void testMarkTodoAsUndone() throws Exception {
-        // Simula que el servicio actualiza correctamente la tarea
+
         when(todoService.updateDoneStatus("1", false)).thenReturn(true);
-    
-        // Cuerpo de la solicitud (JSON)
         String requestBody = """
             {
                 "done": false
             }
         """;
     
-        // Realiza la solicitud PUT con el cuerpo JSON
+      
         mockMvc.perform(put("/todos/1/done")
-                .contentType(MediaType.APPLICATION_JSON) // Tipo de contenido JSON
-                .content(requestBody)) // Cuerpo de la solicitud
-                .andExpect(status().isNoContent()); // Verifica que el estado sea 204
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody)) 
+                .andExpect(status().isNoContent()); 
     }
     
     @Test
@@ -153,13 +141,13 @@ public class TodoControllerTest {
             )
         );
     
-        // Realiza la solicitud GET al endpoint
+    
         mockMvc.perform(get("/todos/metrics/pending"))
-                .andExpect(status().isOk()) // Verifica que el estado sea 200
-                .andExpect(jsonPath("$.averageTime").value("900.00 minutes")) // Verifica el tiempo promedio general
-                .andExpect(jsonPath("$.averageTimeHigh").value("1500.00 minutes")) // Verifica prioridad HIGH
-                .andExpect(jsonPath("$.averageTimeMedium").value("1200.00 minutes")) // Verifica prioridad MEDIUM
-                .andExpect(jsonPath("$.averageTimeLow").value("0.00 minutes")); // Verifica prioridad LOW
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.averageTime").value("900.00 minutes"))
+                .andExpect(jsonPath("$.averageTimeHigh").value("1500.00 minutes")) 
+                .andExpect(jsonPath("$.averageTimeMedium").value("1200.00 minutes")) 
+                .andExpect(jsonPath("$.averageTimeLow").value("0.00 minutes")); 
     }
     @Test
     void testGetTodosPagination() throws Exception {
