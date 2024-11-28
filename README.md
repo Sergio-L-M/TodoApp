@@ -228,3 +228,24 @@ The backend uses the following key dependencies (defined in `pom.xml`):
 1. **Java Development Kit (JDK)**: Version 21 or higher.
 2. **Apache Maven**: Version 3.8.6 or higher.
 
+### Steps to Run
+1. Clone the Repository
+Download the project from the repository:
+```console
+   git clone https://github.com/your-username/todo-app.git
+```
+2. Go to todolist and run tests and start the backend
+```console
+   cd todolist
+   mvn clean install
+   mvn spring-boot:run
+
+```
+3. Return to the main directory and follow the commands to run the frontend
+```console
+   cd frontend
+   cd todoapp
+   npm install
+   npm start
+
+```
