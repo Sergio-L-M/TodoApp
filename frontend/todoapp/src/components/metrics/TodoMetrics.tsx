@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import {
   Accordion,
   AccordionDetails,
@@ -16,38 +16,10 @@ import {
   TableRow,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import axios from "axios";
-import { useSelector } from "react-redux";
-import { RootState } from "../../app/store";
+import { useMetrics } from "./MetricContext";
 
 const Metrics: React.FC = () => {
-  const [metrics, setMetrics] = useState<{
-    averageTime: string;
-    averageTimeHigh: string;
-    averageTimeMedium: string;
-    averageTimeLow: string;
-  } | null>(null);
-  const [loading, setLoading] = useState(false);
-
-  // Accede al estado global para tareas
-  const tasks = useSelector((state: RootState) => state.todos.tasks);
-
-  const fetchMetrics = async () => {
-    setLoading(true);
-    try {
-      const response = await axios.get("http://localhost:9090/todos/metrics/pending");
-      setMetrics(response.data);
-    } catch (error) {
-      console.error("Error fetching metrics:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    // Vuelve a cargar las métricas cuando cambian las tareas
-    fetchMetrics();
-  }, [tasks]);
+  const { metrics, loading } = useMetrics();
 
   return (
     <Box sx={{ mt: 3, mb: 3, mx: 2 }}>

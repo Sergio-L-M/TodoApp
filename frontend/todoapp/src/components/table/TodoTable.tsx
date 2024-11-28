@@ -178,7 +178,7 @@ const TaskTableV2: React.FC = () => {
             Add New Task
           </Button>
           <TablePagination
-            rowsPerPageOptions={[5, 10, 25]}
+            rowsPerPageOptions={[10]}
             component="div"
             count={pagination.totalItems}
             rowsPerPage={pagination.pageSize}
